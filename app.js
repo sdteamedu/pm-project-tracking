@@ -4,7 +4,7 @@ const MSAL_CONFIG = {
   auth: {
     clientId: "234635d5-0043-4b51-a99f-123dc2582323",   // ← เปลี่ยนตรงนี้
     authority: "https://login.microsoftonline.com/fa211b0f-864d-4b4f-ba33-62d3f613ce0c", // ← และตรงนี้
-    redirectUri: window.location.origin,
+    redirectUri: "https://sdteamedu.github.io/pm-project-tracking",
   },
   cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false }
 };
