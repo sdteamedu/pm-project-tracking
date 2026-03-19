@@ -6,8 +6,6 @@
   <title>PM Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
   <style>
     :root {
       --navy: #0F1B35;
@@ -35,8 +33,6 @@
       min-height: 100vh;
       overflow-x: hidden;
     }
-
-    /* ─── SIDEBAR ─── */
     .sidebar {
       position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
       background: var(--navy-mid);
@@ -44,14 +40,10 @@
       display: flex; flex-direction: column;
       z-index: 100;
     }
-    .logo {
-      padding: 24px 20px 20px;
-      border-bottom: 1px solid var(--border);
-    }
+    .logo { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
     .logo-mark {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 20px; font-weight: 500; color: var(--teal);
-      letter-spacing: -1px;
+      font-size: 20px; font-weight: 500; color: var(--teal); letter-spacing: -1px;
     }
     .logo-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; letter-spacing: 2px; text-transform: uppercase; }
     nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
@@ -71,8 +63,6 @@
     .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--teal-dim); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: white; flex-shrink: 0; }
     .user-name { font-size: 13px; font-weight: 500; }
     .user-role { font-size: 11px; color: var(--text-dim); }
-
-    /* ─── MAIN ─── */
     .main { margin-left: 240px; min-height: 100vh; }
     .topbar {
       position: sticky; top: 0; z-index: 50;
@@ -95,22 +85,16 @@
     .btn-danger { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
     .btn-danger:hover { background: rgba(239,68,68,0.2); }
     .btn svg { width: 16px; height: 16px; }
-
     .content { padding: 28px; }
-
-    /* ─── LOGIN SCREEN ─── */
     #loginScreen {
       display: flex; align-items: center; justify-content: center;
       min-height: 100vh; padding: 24px;
       background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,191,166,0.08) 0%, transparent 70%);
     }
     .login-card {
-      background: var(--navy-mid);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 48px;
-      max-width: 400px; width: 100%;
-      text-align: center;
+      background: var(--navy-mid); border: 1px solid var(--border);
+      border-radius: 20px; padding: 48px;
+      max-width: 400px; width: 100%; text-align: center;
     }
     .login-icon { font-size: 48px; margin-bottom: 16px; }
     .login-title { font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
@@ -123,13 +107,8 @@
       font-family: 'Sarabun', sans-serif; transition: background 0.15s;
     }
     .ms-btn:hover { background: #2563B0; }
-
-    /* ─── CARDS ─── */
     .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
-    .stat-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 20px;
-    }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
     .stat-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
     .stat-value { font-size: 32px; font-weight: 700; line-height: 1; }
     .stat-sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
@@ -137,8 +116,6 @@
     .stat-card.gold .stat-value { color: var(--gold); }
     .stat-card.red .stat-value { color: var(--red); }
     .stat-card.blue .stat-value { color: var(--blue); }
-
-    /* ─── PROJECT LIST ─── */
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .section-title { font-size: 16px; font-weight: 600; }
     .project-table { width: 100%; border-collapse: collapse; }
@@ -151,8 +128,6 @@
     .project-table tr:hover td { background: var(--card-hover); }
     .project-table tr:last-child td { border-bottom: none; }
     .table-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-
-    /* ─── STATUS BADGES ─── */
     .badge {
       display: inline-flex; align-items: center; gap: 5px;
       padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
@@ -168,16 +143,12 @@
     .badge.completed .badge-dot { background: var(--blue); }
     .badge.planning { background: rgba(100,116,139,0.2); color: var(--text-dim); }
     .badge.planning .badge-dot { background: var(--slate); }
-
-    /* ─── PROGRESS BAR ─── */
     .progress-wrap { display: flex; align-items: center; gap: 10px; }
     .progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; border-radius: 3px; background: var(--teal); transition: width 0.3s; }
     .progress-fill.gold { background: var(--gold); }
     .progress-fill.red { background: var(--red); }
     .progress-pct { font-size: 12px; color: var(--text-dim); min-width: 32px; text-align: right; font-family: 'IBM Plex Mono', monospace; }
-
-    /* ─── MODAL ─── */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.6);
       backdrop-filter: blur(4px); z-index: 200;
@@ -188,8 +159,7 @@
     .modal {
       background: var(--navy-mid); border: 1px solid var(--border);
       border-radius: 16px; width: 100%; max-width: 680px; max-height: 90vh;
-      overflow-y: auto;
-      transform: translateY(16px); transition: transform 0.2s;
+      overflow-y: auto; transform: translateY(16px); transition: transform 0.2s;
     }
     .modal-overlay.open .modal { transform: translateY(0); }
     .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 24px 28px 0; }
@@ -198,15 +168,12 @@
     .modal-close:hover { color: var(--text); }
     .modal-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; }
     .modal-footer { padding: 0 28px 24px; display: flex; gap: 10px; justify-content: flex-end; }
-
-    /* ─── FORMS ─── */
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group.full { grid-column: 1 / -1; }
     label { font-size: 12px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
     input, select, textarea {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
       border-radius: 8px; padding: 10px 12px;
       color: var(--text); font-size: 14px; font-family: 'Sarabun', sans-serif;
       transition: border-color 0.15s; outline: none;
@@ -214,8 +181,6 @@
     input:focus, select:focus, textarea:focus { border-color: var(--teal); }
     select option { background: var(--navy-mid); }
     textarea { resize: vertical; min-height: 80px; }
-
-    /* ─── TABS ─── */
     .tabs { display: flex; gap: 2px; background: var(--card); border-radius: 8px; padding: 3px; margin-bottom: 24px; width: fit-content; }
     .tab {
       padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
@@ -223,8 +188,6 @@
       border: none; background: none; font-family: 'Sarabun', sans-serif;
     }
     .tab.active { background: var(--navy-light); color: var(--text); }
-
-    /* ─── REPORT SECTION ─── */
     .report-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .report-card {
       background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
@@ -235,8 +198,6 @@
     .report-icon { font-size: 28px; margin-bottom: 10px; }
     .report-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
     .report-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
-
-    /* ─── DETAIL VIEW ─── */
     .detail-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; gap: 16px; }
     .detail-title { font-size: 22px; font-weight: 700; }
     .detail-code { font-size: 13px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; margin-top: 4px; }
@@ -244,8 +205,6 @@
     .detail-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
     .detail-item-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
     .detail-item-value { font-size: 15px; font-weight: 600; }
-
-    /* ─── MILESTONES ─── */
     .milestone-list { display: flex; flex-direction: column; gap: 10px; }
     .milestone-item {
       background: var(--card); border: 1px solid var(--border); border-radius: 8px;
@@ -256,13 +215,9 @@
     .milestone-dot.late { background: var(--red); }
     .milestone-name { flex: 1; font-size: 14px; }
     .milestone-date { font-size: 12px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
-
-    /* ─── EMPTY STATE ─── */
     .empty { text-align: center; padding: 64px 24px; color: var(--text-dim); }
     .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
     .empty-text { font-size: 15px; }
-
-    /* ─── TOAST ─── */
     #toast {
       position: fixed; bottom: 24px; right: 24px; z-index: 999;
       background: var(--navy-light); border: 1px solid var(--border);
@@ -273,15 +228,12 @@
     #toast.show { transform: translateY(0); opacity: 1; }
     #toast.success { border-color: rgba(34,197,94,0.4); }
     #toast.error { border-color: rgba(239,68,68,0.4); }
-
-    /* ─── LOADING ─── */
     .spinner {
       width: 20px; height: 20px; border: 2px solid var(--border);
       border-top-color: var(--teal); border-radius: 50%;
       animation: spin 0.7s linear infinite; flex-shrink: 0;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .hidden { display: none !important; }
     .text-right { text-align: right; }
     .flex { display: flex; }
@@ -295,7 +247,7 @@
 <div id="loginScreen">
   <div class="login-card">
     <div class="login-icon">📊</div>
-    <div class="login-title">PM Dashboard</div>
+    <div class="login-title">PM Project Tracking</div>
     <div class="login-sub">ระบบบริหารจัดการโครงการ<br/>เชื่อมต่อกับ Microsoft 365 ของบริษัท</div>
     <button class="ms-btn" onclick="signIn()">
       <svg width="20" height="20" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
@@ -306,7 +258,7 @@
       </svg>
       เข้าสู่ระบบด้วย Microsoft 365
     </button>
-    <p style="font-size:12px;color:var(--text-dim);margin-top:16px;">ข้อมูลเก็บใน Excel Online ของ OneDrive</p>
+    <p style="font-size:12px;color:var(--text-dim);margin-top:16px;">ข้อมูลเก็บใน SharePoint ของบริษัท</p>
   </div>
 </div>
 
@@ -359,12 +311,11 @@
         <button class="btn btn-secondary" onclick="signOut()">ออกจากระบบ</button>
       </div>
     </div>
-
     <div class="content" id="pageContent"></div>
   </div>
 </div>
 
-<!-- ADD/EDIT PROJECT MODAL -->
+<!-- MODAL -->
 <div class="modal-overlay" id="projectModal">
   <div class="modal">
     <div class="modal-header">
@@ -375,38 +326,17 @@
     </div>
     <div class="modal-body">
       <div class="form-row">
-        <div class="form-group">
-          <label>รหัสโครงการ</label>
-          <input type="text" id="f_code" placeholder="PRJ-001" />
-        </div>
-        <div class="form-group">
-          <label>ชื่อโครงการ</label>
-          <input type="text" id="f_name" placeholder="ชื่อโครงการ" />
-        </div>
+        <div class="form-group"><label>รหัสโครงการ</label><input type="text" id="f_code" placeholder="PRJ-001"/></div>
+        <div class="form-group"><label>ชื่อโครงการ</label><input type="text" id="f_name" placeholder="ชื่อโครงการ"/></div>
       </div>
-      <div class="form-group">
-        <label>รายละเอียดโครงการ</label>
-        <textarea id="f_desc" placeholder="อธิบายโครงการ วัตถุประสงค์ ขอบเขต..."></textarea>
+      <div class="form-group"><label>รายละเอียดโครงการ</label><textarea id="f_desc" placeholder="อธิบายโครงการ วัตถุประสงค์ ขอบเขต..."></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>PM รับผิดชอบ</label><input type="text" id="f_pm" placeholder="ชื่อ PM"/></div>
+        <div class="form-group"><label>ลูกค้า / ผู้ว่าจ้าง</label><input type="text" id="f_client" placeholder="ชื่อลูกค้า"/></div>
       </div>
       <div class="form-row">
-        <div class="form-group">
-          <label>PM รับผิดชอบ</label>
-          <input type="text" id="f_pm" placeholder="ชื่อ PM" />
-        </div>
-        <div class="form-group">
-          <label>ลูกค้า / ผู้ว่าจ้าง</label>
-          <input type="text" id="f_client" placeholder="ชื่อลูกค้า" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>วันเริ่มต้น</label>
-          <input type="date" id="f_start" />
-        </div>
-        <div class="form-group">
-          <label>วันสิ้นสุด</label>
-          <input type="date" id="f_end" />
-        </div>
+        <div class="form-group"><label>วันเริ่มต้น</label><input type="date" id="f_start"/></div>
+        <div class="form-group"><label>วันสิ้นสุด</label><input type="date" id="f_end"/></div>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -419,33 +349,15 @@
             <option value="completed">Completed</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>ความคืบหน้า (%)</label>
-          <input type="number" id="f_progress" placeholder="0-100" min="0" max="100" />
-        </div>
+        <div class="form-group"><label>ความคืบหน้า (%)</label><input type="number" id="f_progress" placeholder="0-100" min="0" max="100"/></div>
       </div>
       <div class="form-row">
-        <div class="form-group">
-          <label>งบประมาณ (บาท)</label>
-          <input type="number" id="f_budget" placeholder="0" />
-        </div>
-        <div class="form-group">
-          <label>งบที่ใช้ไปแล้ว (บาท)</label>
-          <input type="number" id="f_spent" placeholder="0" />
-        </div>
+        <div class="form-group"><label>งบประมาณ (บาท)</label><input type="number" id="f_budget" placeholder="0"/></div>
+        <div class="form-group"><label>งบที่ใช้ไปแล้ว (บาท)</label><input type="number" id="f_spent" placeholder="0"/></div>
       </div>
-      <div class="form-group">
-        <label>ความเสี่ยงปัจจุบัน</label>
-        <textarea id="f_risks" placeholder="ระบุความเสี่ยงหรือปัญหาที่พบ..." style="min-height:60px;"></textarea>
-      </div>
-      <div class="form-group">
-        <label>Milestones (คั่นด้วย ; เช่น Kick-off 2024-01-15; UAT 2024-03-01)</label>
-        <input type="text" id="f_milestones" placeholder="Milestone 1 วัน/เดือน/ปี; Milestone 2 วัน/เดือน/ปี" />
-      </div>
-      <div class="form-group">
-        <label>Update ล่าสุด / หมายเหตุ</label>
-        <textarea id="f_notes" placeholder="สรุปความคืบหน้า งานที่ทำเสร็จ งานถัดไป..." style="min-height:60px;"></textarea>
-      </div>
+      <div class="form-group"><label>ความเสี่ยงปัจจุบัน</label><textarea id="f_risks" placeholder="ระบุความเสี่ยงหรือปัญหาที่พบ..." style="min-height:60px;"></textarea></div>
+      <div class="form-group"><label>Milestones (คั่นด้วย ;)</label><input type="text" id="f_milestones" placeholder="Kick-off 2024-01-15; UAT 2024-03-01"/></div>
+      <div class="form-group"><label>Update ล่าสุด / หมายเหตุ</label><textarea id="f_notes" placeholder="สรุปความคืบหน้า งานที่ทำเสร็จ งานถัดไป..." style="min-height:60px;"></textarea></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal()">ยกเลิก</button>
@@ -457,9 +369,11 @@
   </div>
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
+<!-- โหลด scripts ที่ท้าย body เพื่อให้แน่ใจว่า DOM พร้อมก่อน -->
+<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
