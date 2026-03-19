@@ -29,16 +29,28 @@ let excelFileId = null;
 let currentPage = 'dashboard';
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', async () => {
-  msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
-  await msalInstance.initialize();
-
-  const accounts = msalInstance.getAllAccounts();
-  if (accounts.length > 0) {
-    account = accounts[0];
-    await bootApp();
+async function initApp() {
+  // ตรวจว่า MSAL โหลดแล้วหรือยัง
+  if (typeof msal === 'undefined') {
+    console.error('MSAL library not loaded');
+    return;
   }
-});
+  try {
+    msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
+    await msalInstance.initialize();
+
+    const accounts = msalInstance.getAllAccounts();
+    if (accounts.length > 0) {
+      account = accounts[0];
+      await bootApp();
+    }
+  } catch (e) {
+    console.error('initApp error:', e);
+  }
+}
+
+// รอให้ทุก script โหลดเสร็จก่อนค่อยรัน
+window.addEventListener('load', initApp);
 
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 async function signIn() {
