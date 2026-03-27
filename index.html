@@ -3,233 +3,601 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>iWise Red Theme</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
+  <title>iWise — PM Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
       --primary: #CC1E2B;
       --primary-hover: #A8161F;
       --primary-light: #FEE2E2;
-
-      --background: #F8F9FA;
+      --primary-light2: rgba(204,30,43,0.06);
+      --bg: #F8F9FA;
       --card: #FFFFFF;
       --border: #E5E7EB;
-
+      --border2: #D1D5DB;
       --text: #1F2937;
       --text-dim: #6B7280;
-
+      --text-light: #9CA3AF;
       --success: #16A34A;
-      --warning: #F59E0B;
+      --success-bg: #DCFCE7;
+      --warning: #D97706;
+      --warning-bg: #FEF3C7;
       --danger: #DC2626;
+      --danger-bg: #FEE2E2;
+      --blue: #2563EB;
+      --blue-bg: #DBEAFE;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
     }
 
-    * { box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      margin: 0;
       font-family: 'Sarabun', sans-serif;
-      background: var(--background);
+      background: var(--bg);
       color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
     }
 
-    /* Sidebar */
+    /* ── SIDEBAR ── */
     .sidebar {
-      position: fixed;
-      width: 240px;
-      top: 0;
-      bottom: 0;
+      position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
       background: var(--card);
       border-right: 1px solid var(--border);
-      padding: 20px;
+      display: flex; flex-direction: column;
+      z-index: 100;
     }
-
     .logo {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 30px;
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid var(--border);
     }
-
+    .logo-mark {
+      font-size: 22px; font-weight: 700; color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+    .logo-sub {
+      font-size: 10px; color: var(--text-light);
+      margin-top: 2px; letter-spacing: 1.5px; text-transform: uppercase;
+    }
+    nav { flex: 1; padding: 14px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+    .nav-section {
+      font-size: 10px; color: var(--text-light); letter-spacing: 1.5px;
+      text-transform: uppercase; padding: 10px 10px 4px; margin-top: 4px;
+    }
     .nav-item {
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 6px;
-      cursor: pointer;
-      color: var(--text-dim);
-      transition: 0.2s;
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 12px; border-radius: var(--radius-sm);
+      cursor: pointer; transition: all 0.15s;
+      color: var(--text-dim); font-size: 13.5px;
+      border: none; background: none; width: 100%; text-align: left;
+      font-family: 'Sarabun', sans-serif;
     }
-
-    .nav-item:hover {
-      background: var(--primary-light);
-      color: var(--primary);
-    }
-
+    .nav-item:hover { background: var(--primary-light); color: var(--primary); }
     .nav-item.active {
       background: var(--primary-light);
       color: var(--primary);
       font-weight: 600;
     }
-
-    /* Main */
-    .main {
-      margin-left: 240px;
-    }
-
-    .topbar {
-      background: var(--card);
-      padding: 16px 28px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .content {
-      padding: 32px;
-    }
-
-    /* Buttons */
-    .btn {
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-family: 'Sarabun';
-      transition: 0.2s;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
-
-    .btn-secondary {
-      background: #F3F4F6;
-      border: 1px solid var(--border);
-    }
-
-    /* Cards */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      transition: 0.2s;
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-    }
-
-    /* Table */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th {
-      background: #F9FAFB;
-      text-align: left;
-      font-size: 12px;
-      padding: 10px;
-      color: var(--text-dim);
-    }
-
-    td {
-      padding: 12px;
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .sidebar-footer {
+      padding: 14px 16px;
       border-top: 1px solid var(--border);
+      background: #FAFAFA;
     }
-
-    tr:hover td {
-      background: var(--primary-light);
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--primary); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
     }
+    .user-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .user-role { font-size: 11px; color: var(--text-light); }
 
-    /* Badge */
+    /* ── MAIN ── */
+    .main { margin-left: 240px; min-height: 100vh; }
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 13px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .page-title { font-size: 17px; font-weight: 700; color: var(--text); }
+    .content { padding: 28px; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 16px; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: none; transition: all 0.15s; font-family: 'Sarabun', sans-serif;
+      white-space: nowrap;
+    }
+    .btn svg { width: 14px; height: 14px; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(204,30,43,0.25); }
+    .btn-secondary { background: #F3F4F6; color: var(--text); border: 1px solid var(--border2); }
+    .btn-secondary:hover { background: #E5E7EB; }
+    .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(220,38,38,0.2); }
+    .btn-danger:hover { background: #FECACA; }
+
+    /* ── LOGIN ── */
+    #loginScreen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px;
+      background: linear-gradient(135deg, #FFF5F5 0%, #F8F9FA 60%, #FFF 100%);
+    }
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px; padding: 48px;
+      max-width: 400px; width: 100%; text-align: center;
+      box-shadow: var(--shadow-md);
+    }
+    .login-icon { font-size: 48px; margin-bottom: 16px; }
+    .login-title { font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .login-sub { font-size: 14px; color: var(--text-dim); margin-bottom: 32px; line-height: 1.6; }
+    .ms-btn {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      width: 100%; padding: 13px; border-radius: 10px;
+      background: #2563EB; color: white;
+      border: none; cursor: pointer; font-size: 14px; font-weight: 600;
+      font-family: 'Sarabun', sans-serif; transition: background 0.15s;
+    }
+    .ms-btn:hover { background: #1D4ED8; }
+
+    /* ── STAT CARDS ── */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      box-shadow: var(--shadow); position: relative; overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .stat-card.teal::before { background: var(--primary); }
+    .stat-card.gold::before { background: var(--warning); }
+    .stat-card.red::before  { background: var(--danger); }
+    .stat-card.blue::before { background: var(--blue); }
+    .stat-label { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
+    .stat-value { font-size: 30px; font-weight: 700; line-height: 1; }
+    .stat-sub { font-size: 12px; color: var(--text-dim); margin-top: 5px; }
+    .stat-card.teal .stat-value { color: var(--primary); }
+    .stat-card.gold .stat-value { color: var(--warning); }
+    .stat-card.red  .stat-value { color: var(--danger); }
+    .stat-card.blue .stat-value { color: var(--blue); }
+
+    /* ── SECTION ── */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .section-title { font-size: 15px; font-weight: 700; color: var(--text); }
+
+    /* ── TABLE CARD ── */
+    .table-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+    }
+    .project-table { width: 100%; border-collapse: collapse; }
+    .project-table th {
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text-light); text-transform: uppercase; letter-spacing: 1px;
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      background: #FAFAFA;
+    }
+    .project-table td {
+      padding: 13px 16px; border-bottom: 1px solid var(--border);
+      font-size: 13.5px; color: var(--text);
+    }
+    .project-table tr:last-child td { border-bottom: none; }
+    .project-table tbody tr { transition: background 0.12s; }
+    .project-table tbody tr:hover td { background: var(--primary-light); }
+
+    /* ── BADGES ── */
     .badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 12px;
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600;
     }
+    .badge-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .badge.on-track  { background: var(--success-bg); color: var(--success); }
+    .badge.on-track  .badge-dot { background: var(--success); }
+    .badge.at-risk   { background: var(--warning-bg); color: var(--warning); }
+    .badge.at-risk   .badge-dot { background: var(--warning); }
+    .badge.delayed   { background: var(--danger-bg); color: var(--danger); }
+    .badge.delayed   .badge-dot { background: var(--danger); }
+    .badge.completed { background: var(--blue-bg); color: var(--blue); }
+    .badge.completed .badge-dot { background: var(--blue); }
+    .badge.planning  { background: #F3F4F6; color: var(--text-dim); }
+    .badge.planning  .badge-dot { background: var(--text-light); }
 
-    .success { background: #DCFCE7; color: var(--success); }
-    .danger { background: #FEE2E2; color: var(--danger); }
+    /* ── PROGRESS ── */
+    .progress-wrap { display: flex; align-items: center; gap: 8px; }
+    .progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; min-width: 60px; }
+    .progress-fill { height: 100%; border-radius: 3px; background: var(--primary); transition: width 0.3s; }
+    .progress-fill.gold { background: var(--warning); }
+    .progress-fill.red  { background: var(--danger); }
+    .progress-pct { font-size: 11px; color: var(--text-dim); min-width: 32px; text-align: right; font-family: 'IBM Plex Mono', monospace; }
 
-    /* Progress */
-    .progress {
-      height: 6px;
-      background: var(--border);
-      border-radius: 4px;
-      overflow: hidden;
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(31,41,55,0.4);
+      backdrop-filter: blur(4px); z-index: 200;
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
     }
-
-    .progress-fill {
-      height: 100%;
-      background: var(--primary);
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; width: 100%; max-width: 680px; max-height: 90vh;
+      overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      transform: translateY(12px); transition: transform 0.2s;
     }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px; border-bottom: 1px solid var(--border);
+    }
+    .modal-title { font-size: 16px; font-weight: 700; color: var(--text); }
+    .modal-close { background: none; border: none; cursor: pointer; color: var(--text-dim); padding: 4px; border-radius: 6px; transition: background 0.15s; }
+    .modal-close:hover { background: var(--border); color: var(--text); }
+    .modal-body { padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; background: #FAFAFA; border-radius: 0 0 16px 16px; }
 
+    /* ── FORMS ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    label {
+      font-size: 11px; font-weight: 700; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 0.8px;
+    }
+    input, select, textarea {
+      background: #F9FAFB; border: 1px solid var(--border2);
+      border-radius: var(--radius-sm); padding: 9px 12px;
+      color: var(--text); font-size: 13.5px; font-family: 'Sarabun', sans-serif;
+      transition: border-color 0.15s, box-shadow 0.15s; outline: none; width: 100%;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(204,30,43,0.1);
+      background: #FFFFFF;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex; gap: 2px; background: #F3F4F6;
+      border-radius: var(--radius-sm); padding: 3px;
+      margin-bottom: 20px; width: fit-content;
+    }
+    .tab {
+      padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.15s; color: var(--text-dim);
+      border: none; background: none; font-family: 'Sarabun', sans-serif;
+    }
+    .tab.active { background: var(--primary); color: white; box-shadow: 0 1px 4px rgba(204,30,43,0.3); }
+
+    /* ── REPORT CARDS ── */
+    .report-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .report-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 20px; cursor: pointer;
+      transition: all 0.15s; box-shadow: var(--shadow);
+    }
+    .report-card:hover { border-color: var(--primary); background: #FFF5F5; transform: translateY(-1px); }
+    .report-card.selected { border-color: var(--primary); background: var(--primary-light); }
+    .report-icon { font-size: 26px; margin-bottom: 10px; }
+    .report-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+    .report-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+    /* ── DETAIL ── */
+    .detail-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; gap: 16px; }
+    .detail-title { font-size: 22px; font-weight: 700; color: var(--text); }
+    .detail-code { font-size: 12px; color: var(--primary); font-family: 'IBM Plex Mono', monospace; margin-top: 3px; }
+    .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .detail-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 15px; box-shadow: var(--shadow); }
+    .detail-item-label { font-size: 10px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 600; }
+    .detail-item-value { font-size: 14px; font-weight: 600; color: var(--text); }
+
+    /* ── MILESTONES ── */
+    .milestone-list { display: flex; flex-direction: column; gap: 8px; }
+    .milestone-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 11px 15px;
+      display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow);
+    }
+    .milestone-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); flex-shrink: 0; }
+    .milestone-dot.done { background: var(--success); }
+    .milestone-dot.late { background: var(--danger); }
+    .milestone-name { flex: 1; font-size: 13px; color: var(--text); }
+    .milestone-date { font-size: 11px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
+
+    /* ── EMPTY ── */
+    .empty { text-align: center; padding: 56px 24px; color: var(--text-dim); }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.35; }
+    .empty-text { font-size: 14px; }
+
+    /* ── FINANCIAL ── */
+    .fin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .cost-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .cost-row:last-child { border-bottom: none; }
+    .cost-cat { width: 90px; font-size: 12px; color: var(--text-dim); flex-shrink: 0; }
+    .cost-bars { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .cost-bar-row { display: flex; align-items: center; gap: 8px; }
+    .cost-bar-label { width: 30px; font-size: 10px; color: var(--text-dim); text-align: right; flex-shrink: 0; }
+    .cost-bar-track { flex: 1; height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .cost-bar-fill { height: 100%; border-radius: 4px; }
+    .cost-amount { width: 70px; text-align: right; font-size: 11px; font-family: 'IBM Plex Mono', monospace; flex-shrink: 0; }
+    .ts-cell { text-align: center; padding: 8px 4px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; min-width: 44px; }
+    .ts-day { text-align: center; font-size: 10px; color: var(--text-dim); padding: 6px 4px; min-width: 44px; }
+    .ts-fill { background: var(--primary-light); color: var(--primary); border-radius: 4px; display: inline-block; min-width: 28px; padding: 2px 6px; font-weight: 600; }
+    .fin-tabs { display: flex; gap: 2px; background: #F3F4F6; border-radius: var(--radius-sm); padding: 3px; margin-bottom: 20px; width: fit-content; }
+    .fin-tab { padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; color: var(--text-dim); border: none; background: none; font-family: 'Sarabun', sans-serif; }
+    .fin-tab.active { background: var(--primary); color: white; box-shadow: 0 1px 4px rgba(204,30,43,0.3); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 22px; right: 22px; z-index: 999;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px 18px;
+      font-size: 13.5px; color: var(--text);
+      display: flex; align-items: center; gap: 10px;
+      transform: translateY(70px); opacity: 0; transition: all 0.28s;
+      box-shadow: var(--shadow-md);
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.success { border-color: rgba(22,163,74,0.4); }
+    #toast.error { border-color: rgba(220,38,38,0.4); }
+    .spinner {
+      width: 18px; height: 18px; border: 2px solid var(--border);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 0.7s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+    .flex { display: flex; }
+    .gap-2 { gap: 8px; }
+    .items-center { align-items: center; }
+    .text-right { text-align: right; }
   </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="logo">iWise</div>
-  <div class="nav-item active">Dashboard</div>
-  <div class="nav-item">Projects</div>
-  <div class="nav-item">Financial</div>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-icon">📊</div>
+    <div class="login-title">iWise</div>
+    <div class="login-sub">ระบบบริหารจัดการโครงการ<br/>เชื่อมต่อกับ Microsoft 365 ของบริษัท</div>
+    <button class="ms-btn" onclick="signIn()">
+      <svg width="20" height="20" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="10" height="10" fill="#f25022"/>
+        <rect x="12" y="1" width="10" height="10" fill="#7fba00"/>
+        <rect x="1" y="12" width="10" height="10" fill="#00a4ef"/>
+        <rect x="12" y="12" width="10" height="10" fill="#ffb900"/>
+      </svg>
+      เข้าสู่ระบบด้วย Microsoft 365
+    </button>
+    <p style="font-size:12px;color:var(--text-dim);margin-top:16px;">ข้อมูลเก็บใน SharePoint ของบริษัท</p>
+  </div>
 </div>
 
-<div class="main">
-  <div class="topbar">
-    <div>Dashboard</div>
-    <button class="btn btn-primary">+ New Project</button>
-  </div>
-
-  <div class="content">
-
-    <div class="card">
-      <h3>Project Overview</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Project</th>
-            <th>Status</th>
-            <th>Progress</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>ERP Implementation</td>
-            <td><span class="badge success">On Track</span></td>
-            <td>
-              <div class="progress">
-                <div class="progress-fill" style="width:70%"></div>
-              </div>
-            </td>
-          </tr>
-
-          <tr>
-            <td>Data Warehouse</td>
-            <td><span class="badge danger">Delayed</span></td>
-            <td>
-              <div class="progress">
-                <div class="progress-fill" style="width:40%"></div>
-              </div>
-            </td>
-          </tr>
-
-        </tbody>
-      </table>
+<!-- APP SHELL -->
+<div id="appShell" class="hidden">
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">iWise</div>
+      <div class="logo-sub">by iWired</div>
     </div>
+    <nav>
+      <div class="nav-section">หน้าหลัก</div>
+      <button class="nav-item active" onclick="showPage('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        ภาพรวม
+      </button>
+      <button class="nav-item" onclick="showPage('projects')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v4H3zm0 7h18v4H3zm0 7h18v4H3z"/></svg>
+        โครงการทั้งหมด
+      </button>
+      <div class="nav-section">จัดการ</div>
+      <button class="nav-item" onclick="openAddProject()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        เพิ่มโครงการ
+      </button>
+      <button class="nav-item" onclick="showPage('financials')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>
+        Financial & Resources
+      </button>
+      <button class="nav-item" onclick="showPage('report')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        สร้างรายงาน/สไลด์
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="avatar" id="userAvatar">?</div>
+        <div>
+          <div class="user-name" id="userName">กำลังโหลด...</div>
+          <div class="user-role">Project Manager</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="pageTitle">ภาพรวม</div>
+      <div class="flex gap-2 items-center">
+        <button class="btn btn-secondary" onclick="syncData()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+          ซิงค์
+        </button>
+        <button class="btn btn-secondary" onclick="signOut()">ออกจากระบบ</button>
+      </div>
+    </div>
+    <div class="content" id="pageContent"></div>
   </div>
 </div>
 
+<!-- MODAL -->
+<div class="modal-overlay" id="projectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">เพิ่มโครงการใหม่</div>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>รหัสโครงการ</label><input type="text" id="f_code" placeholder="PRJ-001"/></div>
+        <div class="form-group"><label>ชื่อโครงการ</label><input type="text" id="f_name" placeholder="ชื่อโครงการ"/></div>
+      </div>
+      <div class="form-group"><label>รายละเอียดโครงการ</label><textarea id="f_desc" placeholder="อธิบายโครงการ วัตถุประสงค์ ขอบเขต..."></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>PM รับผิดชอบ</label><input type="text" id="f_pm" placeholder="ชื่อ PM"/></div>
+        <div class="form-group"><label>ลูกค้า / ผู้ว่าจ้าง</label><input type="text" id="f_client" placeholder="ชื่อลูกค้า"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>วันเริ่มต้น</label><input type="date" id="f_start"/></div>
+        <div class="form-group"><label>วันสิ้นสุด</label><input type="date" id="f_end"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>สถานะ</label>
+          <select id="f_status">
+            <option value="planning">Planning</option>
+            <option value="on-track">On Track</option>
+            <option value="at-risk">At Risk</option>
+            <option value="delayed">Delayed</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="form-group"><label>ความคืบหน้า (%)</label><input type="number" id="f_progress" placeholder="0-100" min="0" max="100"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>งบประมาณ (บาท)</label><input type="number" id="f_budget" placeholder="0"/></div>
+        <div class="form-group"><label>งบที่ใช้ไปแล้ว (บาท)</label><input type="number" id="f_spent" placeholder="0"/></div>
+      </div>
+      <div class="form-group"><label>ความเสี่ยงปัจจุบัน</label><textarea id="f_risks" placeholder="ระบุความเสี่ยงหรือปัญหาที่พบ..." style="min-height:60px;"></textarea></div>
+      <div class="form-group"><label>Milestones (คั่นด้วย ;)</label><input type="text" id="f_milestones" placeholder="Kick-off 2024-01-15; UAT 2024-03-01"/></div>
+      <div class="form-group"><label>Update ล่าสุด / หมายเหตุ</label><textarea id="f_notes" placeholder="สรุปความคืบหน้า งานที่ทำเสร็จ งานถัดไป..." style="min-height:60px;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveProject()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        บันทึก
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- BUDGET MODAL -->
+<div class="modal-overlay" id="budgetModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title" id="budgetModalTitle">เพิ่มรายการงบประมาณ</div>
+      <button class="modal-close" onclick="closeBudgetModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>โครงการ</label>
+          <select id="fb_project"></select>
+        </div>
+        <div class="form-group">
+          <label>หมวดหมู่</label>
+          <select id="fb_cat">
+            <option value="Labour">Labour (แรงงาน)</option>
+            <option value="Materials">Materials (วัสดุ)</option>
+            <option value="Equipment">Equipment (อุปกรณ์)</option>
+            <option value="Subcontract">Subcontract (จ้างช่วง)</option>
+            <option value="Overhead">Overhead (ค่าใช้จ่ายทั่วไป)</option>
+            <option value="Other">Other (อื่นๆ)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>งบประมาณ (บาท)</label>
+          <input type="number" id="fb_est" placeholder="0"/>
+        </div>
+        <div class="form-group">
+          <label>ใช้จริง (บาท)</label>
+          <input type="number" id="fb_act" placeholder="0"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>หมายเหตุ</label>
+        <input type="text" id="fb_note" placeholder="รายละเอียดเพิ่มเติม..."/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeBudgetModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveBudgetItem()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIMESHEET MODAL -->
+<div class="modal-overlay" id="timesheetModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title">บันทึก Timesheet</div>
+      <button class="modal-close" onclick="closeTimesheetModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>โครงการ</label>
+          <select id="ft_project"></select>
+        </div>
+        <div class="form-group">
+          <label>ชื่อพนักงาน</label>
+          <input type="text" id="ft_name" placeholder="ชื่อ-สกุล"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>สัปดาห์ที่</label>
+        <input type="date" id="ft_week" />
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>จันทร์</label><input type="number" id="ft_mon" placeholder="0" min="0" max="24"/></div>
+        <div class="form-group"><label>อังคาร</label><input type="number" id="ft_tue" placeholder="0" min="0" max="24"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>พุธ</label><input type="number" id="ft_wed" placeholder="0" min="0" max="24"/></div>
+        <div class="form-group"><label>พฤหัสบดี</label><input type="number" id="ft_thu" placeholder="0" min="0" max="24"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>ศุกร์</label><input type="number" id="ft_fri" placeholder="0" min="0" max="24"/></div>
+        <div class="form-group"><label>รวม (ชม.)</label><input type="number" id="ft_total" placeholder="0" readonly style="opacity:0.6"/></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeTimesheetModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveTimesheetItem()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- โหลด scripts ที่ท้าย body เพื่อให้แน่ใจว่า DOM พร้อมก่อน -->
+<script src="msal-browser.min.js"></script>
+<script src="pptxgen.bundle.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
