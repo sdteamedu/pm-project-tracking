@@ -291,20 +291,21 @@ async function syncData() {
 function showPage(page) {
   currentPage = page;
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const navMap = { dashboard: 0, projects: 1, report: 3 };
+  const navMap = { dashboard: 0, projects: 1, financials: 3, report: 4 };
   const navItems = document.querySelectorAll('.nav-item');
   if (navMap[page] !== undefined) navItems[navMap[page]]?.classList.add('active');
   renderCurrentPage();
 }
 
 function renderCurrentPage() {
-  const titles = { dashboard: 'ภาพรวม', projects: 'โครงการทั้งหมด', report: 'สร้างรายงาน / สไลด์' };
+  const titles = { dashboard: 'ภาพรวม', projects: 'โครงการทั้งหมด', report: 'สร้างรายงาน / สไลด์', financials: 'Financial & Resources' };
   document.getElementById('pageTitle').textContent = titles[currentPage] || '';
   switch (currentPage) {
-    case 'dashboard': renderDashboard(); break;
-    case 'projects': renderProjects(); break;
-    case 'detail': renderDetail(); break;
-    case 'report': renderReport(); break;
+    case 'dashboard':   renderDashboard();   break;
+    case 'projects':    renderProjects();    break;
+    case 'detail':      renderDetail();      break;
+    case 'report':      renderReport();      break;
+    case 'financials':  renderFinancials();  break;
   }
 }
 
@@ -947,4 +948,262 @@ function showToast(msg, type = '') {
   t.className = 'show ' + type;
   clearTimeout(t._timeout);
   t._timeout = setTimeout(() => { t.classList.remove('show'); }, 3000);
+}
+// ─── FINANCIAL & RESOURCES ────────────────────────────────────────────────────
+let budgetItems = JSON.parse(localStorage.getItem('fin_budget') || '[]');
+let timesheetItems = JSON.parse(localStorage.getItem('fin_timesheet') || '[]');
+let currentFinTab = 'budget';
+let editingBudgetId = null;
+
+function saveFin() {
+  localStorage.setItem('fin_budget', JSON.stringify(budgetItems));
+  localStorage.setItem('fin_timesheet', JSON.stringify(timesheetItems));
+}
+
+// ── RENDER FINANCIALS PAGE ────────────────────────────────────────────────────
+function renderFinancials() {
+  const totalBudget = projects.reduce((a, p) => a + (parseInt(p.budget) || 0), 0);
+  const totalSpent  = projects.reduce((a, p) => a + (parseInt(p.spent)  || 0), 0);
+  const totalHours  = timesheetItems.reduce((a, t) => a + (parseInt(t.total) || 0), 0);
+  const variance    = totalSpent - totalBudget;
+  const varColor    = variance > 0 ? 'var(--red)' : 'var(--green)';
+
+  // Summary stats
+  const statsHtml = `
+    <div class="fin-grid">
+      <div class="stat-card teal">
+        <div class="stat-label">งบประมาณรวม</div>
+        <div class="stat-value">${(totalBudget/1000000).toFixed(2)}M</div>
+        <div class="stat-sub">ทุกโครงการ</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-label">ใช้จริงรวม</div>
+        <div class="stat-value">${(totalSpent/1000000).toFixed(2)}M</div>
+        <div class="stat-sub">${totalBudget ? Math.round(totalSpent/totalBudget*100) : 0}% ของงบ</div>
+      </div>
+      <div class="stat-card ${variance > 0 ? 'red' : 'blue'}">
+        <div class="stat-label">Variance</div>
+        <div class="stat-value" style="color:${varColor}">${variance >= 0 ? '+' : ''}${(variance/1000).toFixed(0)}K</div>
+        <div class="stat-sub">${variance > 0 ? 'เกินงบ' : 'ประหยัดงบ'}</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-label">ชั่วโมงรวม</div>
+        <div class="stat-value">${totalHours.toLocaleString()}</div>
+        <div class="stat-sub">Man-hours</div>
+      </div>
+    </div>`;
+
+  // Tabs
+  const tabsHtml = `
+    <div class="fin-tabs">
+      <button class="fin-tab ${currentFinTab==='budget'?'active':''}" onclick="switchFinTab('budget')">💰 Budget vs Actual</button>
+      <button class="fin-tab ${currentFinTab==='timesheet'?'active':''}" onclick="switchFinTab('timesheet')">🕐 Timesheet</button>
+    </div>`;
+
+  // Budget tab
+  const CATS = ['Labour','Materials','Equipment','Subcontract','Overhead','Other'];
+  const catTotals = CATS.map(cat => {
+    const items = budgetItems.filter(b => b.cat === cat);
+    return {
+      cat,
+      est: items.reduce((a, b) => a + (parseInt(b.est)||0), 0),
+      act: items.reduce((a, b) => a + (parseInt(b.act)||0), 0),
+    };
+  }).filter(c => c.est > 0 || c.act > 0);
+
+  const maxVal = Math.max(...catTotals.map(c => Math.max(c.est, c.act)), 1);
+
+  const budgetTabHtml = `
+    <div class="grid-2">
+      <div class="table-card" style="padding:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)">
+          <span style="font-size:14px;font-weight:600">Budget vs Actual — รายหมวด</span>
+          <button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="openBudgetModal()">+ เพิ่มรายการ</button>
+        </div>
+        <div style="padding:14px 18px">
+          ${catTotals.length === 0 ? `<div class="empty" style="padding:32px"><div class="empty-icon">💰</div><div class="empty-text">ยังไม่มีรายการ กด "+ เพิ่มรายการ"</div></div>` :
+            catTotals.map(c => {
+              const estW = (c.est/maxVal*100).toFixed(0);
+              const actW = (c.act/maxVal*100).toFixed(0);
+              const actColor = c.act > c.est ? 'var(--red)' : 'var(--gold)';
+              return `<div class="cost-row">
+                <div class="cost-cat">${c.cat}</div>
+                <div class="cost-bars">
+                  <div class="cost-bar-row">
+                    <div class="cost-bar-label" style="color:var(--blue)">Est.</div>
+                    <div class="cost-bar-track"><div class="cost-bar-fill" style="width:${estW}%;background:var(--blue);opacity:0.6"></div></div>
+                    <div class="cost-amount" style="color:var(--blue)">${(c.est/1000).toFixed(0)}K</div>
+                  </div>
+                  <div class="cost-bar-row">
+                    <div class="cost-bar-label" style="color:${actColor}">Act.</div>
+                    <div class="cost-bar-track"><div class="cost-bar-fill" style="width:${actW}%;background:${actColor}"></div></div>
+                    <div class="cost-amount" style="color:${actColor}">${(c.act/1000).toFixed(0)}K</div>
+                  </div>
+                </div>
+              </div>`;
+            }).join('')
+          }
+        </div>
+      </div>
+
+      <div class="table-card" style="padding:0">
+        <div style="padding:14px 18px;border-bottom:1px solid var(--border)">
+          <span style="font-size:14px;font-weight:600">รายการทั้งหมด</span>
+        </div>
+        <table class="project-table">
+          <thead><tr><th>โครงการ</th><th>หมวด</th><th>งบ (฿)</th><th>จริง (฿)</th><th>หมายเหตุ</th><th></th></tr></thead>
+          <tbody>
+            ${budgetItems.length === 0
+              ? `<tr><td colspan="6"><div class="empty" style="padding:24px"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีรายการ</div></div></td></tr>`
+              : budgetItems.map(b => {
+                  const proj = projects.find(p => p.id === b.projectId);
+                  const over = (parseInt(b.act)||0) > (parseInt(b.est)||0);
+                  return `<tr>
+                    <td style="font-size:12px">${proj ? proj.code : '-'}</td>
+                    <td><span class="badge" style="background:rgba(0,191,166,0.12);color:var(--teal)">${b.cat}</span></td>
+                    <td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${parseInt(b.est||0).toLocaleString()}</td>
+                    <td style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:${over?'var(--red)':'var(--green)'}">${parseInt(b.act||0).toLocaleString()}</td>
+                    <td style="font-size:12px;color:var(--text-dim)">${b.note||'-'}</td>
+                    <td><button class="btn btn-danger" style="padding:3px 8px;font-size:11px" onclick="deleteBudgetItem('${b.id}')">ลบ</button></td>
+                  </tr>`;
+                }).join('')
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+
+  // Timesheet tab
+  const weeks = [...new Set(timesheetItems.map(t => t.week))].sort().reverse().slice(0, 4);
+  const timesheetTabHtml = `
+    <div class="section-header" style="margin-bottom:16px">
+      <div class="section-title">Timesheet — บันทึกชั่วโมงการทำงาน</div>
+      <button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="openTimesheetModal()">+ บันทึก Timesheet</button>
+    </div>
+    ${timesheetItems.length === 0
+      ? `<div class="table-card"><div class="empty"><div class="empty-icon">🕐</div><div class="empty-text">ยังไม่มีรายการ กด "+ บันทึก Timesheet"</div></div></div>`
+      : `<div class="table-card">
+          <table class="project-table">
+            <thead><tr><th>โครงการ</th><th>พนักงาน</th><th>สัปดาห์</th><th>จ.</th><th>อ.</th><th>พ.</th><th>พฤ.</th><th>ศ.</th><th>รวม</th><th></th></tr></thead>
+            <tbody>
+              ${timesheetItems.map(t => {
+                const proj = projects.find(p => p.id === t.projectId);
+                return `<tr>
+                  <td style="font-size:12px">${proj ? proj.code : '-'}</td>
+                  <td style="font-size:12px;font-weight:500">${t.name}</td>
+                  <td style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text-dim)">${t.week}</td>
+                  ${['mon','tue','wed','thu','fri'].map(d => `<td class="ts-cell">${t[d]>0?`<span class="ts-fill">${t[d]}</span>`:'-'}</td>`).join('')}
+                  <td style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--teal);font-weight:600">${t.total}h</td>
+                  <td><button class="btn btn-danger" style="padding:3px 8px;font-size:11px" onclick="deleteTimesheetItem('${t.id}')">ลบ</button></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`
+    }`;
+
+  document.getElementById('pageContent').innerHTML = `
+    ${statsHtml}
+    ${tabsHtml}
+    <div id="fin-tab-content">
+      ${currentFinTab === 'budget' ? budgetTabHtml : timesheetTabHtml}
+    </div>`;
+}
+
+function switchFinTab(tab) {
+  currentFinTab = tab;
+  renderFinancials();
+}
+
+// ── BUDGET MODAL ──────────────────────────────────────────────────────────────
+function openBudgetModal() {
+  editingBudgetId = null;
+  document.getElementById('budgetModalTitle').textContent = 'เพิ่มรายการงบประมาณ';
+  const sel = document.getElementById('fb_project');
+  sel.innerHTML = projects.map(p => `<option value="${p.id}">${p.code} — ${p.name}</option>`).join('');
+  document.getElementById('fb_cat').value = 'Labour';
+  document.getElementById('fb_est').value = '';
+  document.getElementById('fb_act').value = '';
+  document.getElementById('fb_note').value = '';
+  document.getElementById('budgetModal').classList.add('open');
+}
+
+function closeBudgetModal() {
+  document.getElementById('budgetModal').classList.remove('open');
+}
+
+function saveBudgetItem() {
+  const item = {
+    id: 'b_' + Date.now(),
+    projectId: document.getElementById('fb_project').value,
+    cat: document.getElementById('fb_cat').value,
+    est: document.getElementById('fb_est').value,
+    act: document.getElementById('fb_act').value,
+    note: document.getElementById('fb_note').value.trim(),
+  };
+  budgetItems.push(item);
+  saveFin();
+  closeBudgetModal();
+  showToast('บันทึกรายการงบแล้ว ✓', 'success');
+  renderFinancials();
+}
+
+function deleteBudgetItem(id) {
+  if (!confirm('ยืนยันลบรายการนี้?')) return;
+  budgetItems = budgetItems.filter(b => b.id !== id);
+  saveFin();
+  renderFinancials();
+  showToast('ลบแล้ว', 'success');
+}
+
+// ── TIMESHEET MODAL ───────────────────────────────────────────────────────────
+function openTimesheetModal() {
+  const sel = document.getElementById('ft_project');
+  sel.innerHTML = projects.map(p => `<option value="${p.id}">${p.code} — ${p.name}</option>`).join('');
+  document.getElementById('ft_name').value = '';
+  document.getElementById('ft_week').value = new Date().toISOString().slice(0, 10);
+  ['mon','tue','wed','thu','fri'].forEach(d => document.getElementById('ft_'+d).value = '');
+  document.getElementById('ft_total').value = '';
+  // Auto-calculate total
+  ['mon','tue','wed','thu','fri'].forEach(d => {
+    document.getElementById('ft_'+d).oninput = () => {
+      const total = ['mon','tue','wed','thu','fri'].reduce((a, x) => a + (parseInt(document.getElementById('ft_'+x).value)||0), 0);
+      document.getElementById('ft_total').value = total;
+    };
+  });
+  document.getElementById('timesheetModal').classList.add('open');
+}
+
+function closeTimesheetModal() {
+  document.getElementById('timesheetModal').classList.remove('open');
+}
+
+function saveTimesheetItem() {
+  const name = document.getElementById('ft_name').value.trim();
+  if (!name) { showToast('กรุณากรอกชื่อพนักงาน', 'error'); return; }
+  const days = ['mon','tue','wed','thu','fri'];
+  const vals = {};
+  days.forEach(d => vals[d] = parseInt(document.getElementById('ft_'+d).value)||0);
+  const total = days.reduce((a, d) => a + vals[d], 0);
+  const item = {
+    id: 'ts_' + Date.now(),
+    projectId: document.getElementById('ft_project').value,
+    name,
+    week: document.getElementById('ft_week').value,
+    ...vals,
+    total,
+  };
+  timesheetItems.push(item);
+  saveFin();
+  closeTimesheetModal();
+  showToast('บันทึก Timesheet แล้ว ✓', 'success');
+  renderFinancials();
+}
+
+function deleteTimesheetItem(id) {
+  if (!confirm('ยืนยันลบรายการนี้?')) return;
+  timesheetItems = timesheetItems.filter(t => t.id !== id);
+  saveFin();
+  renderFinancials();
+  showToast('ลบแล้ว', 'success');
 }

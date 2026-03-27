@@ -239,6 +239,24 @@
     .flex { display: flex; }
     .gap-2 { gap: 8px; }
     .items-center { align-items: center; }
+    /* ─── FINANCIAL ─── */
+    .fin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .cost-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .cost-row:last-child { border-bottom: none; }
+    .cost-cat { width: 90px; font-size: 12px; color: var(--text-dim); flex-shrink: 0; }
+    .cost-bars { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .cost-bar-row { display: flex; align-items: center; gap: 8px; }
+    .cost-bar-label { width: 30px; font-size: 10px; color: var(--text-dim); text-align: right; flex-shrink: 0; }
+    .cost-bar-track { flex: 1; height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .cost-bar-fill { height: 100%; border-radius: 4px; }
+    .cost-amount { width: 70px; text-align: right; font-size: 11px; font-family: 'IBM Plex Mono', monospace; flex-shrink: 0; }
+    .ts-cell { text-align: center; padding: 8px 4px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; min-width: 44px; }
+    .ts-day { text-align: center; font-size: 10px; color: var(--text-dim); padding: 6px 4px; min-width: 44px; }
+    .ts-fill { background: rgba(0,191,166,0.12); color: var(--teal); border-radius: 4px; display: inline-block; min-width: 28px; padding: 2px 6px; }
+    .fin-tabs { display: flex; gap: 2px; background: var(--card); border-radius: 8px; padding: 3px; margin-bottom: 20px; width: fit-content; }
+    .fin-tab { padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; color: var(--text-dim); border: none; background: none; font-family: 'Sarabun', sans-serif; }
+    .fin-tab.active { background: var(--navy-light); color: var(--text); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   </style>
 </head>
 <body>
@@ -283,6 +301,10 @@
       <button class="nav-item" onclick="openAddProject()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         เพิ่มโครงการ
+      </button>
+      <button class="nav-item" onclick="showPage('financials')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>
+        Financial & Resources
       </button>
       <button class="nav-item" onclick="showPage('report')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -365,6 +387,99 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         บันทึก
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- BUDGET MODAL -->
+<div class="modal-overlay" id="budgetModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title" id="budgetModalTitle">เพิ่มรายการงบประมาณ</div>
+      <button class="modal-close" onclick="closeBudgetModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>โครงการ</label>
+          <select id="fb_project"></select>
+        </div>
+        <div class="form-group">
+          <label>หมวดหมู่</label>
+          <select id="fb_cat">
+            <option value="Labour">Labour (แรงงาน)</option>
+            <option value="Materials">Materials (วัสดุ)</option>
+            <option value="Equipment">Equipment (อุปกรณ์)</option>
+            <option value="Subcontract">Subcontract (จ้างช่วง)</option>
+            <option value="Overhead">Overhead (ค่าใช้จ่ายทั่วไป)</option>
+            <option value="Other">Other (อื่นๆ)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>งบประมาณ (บาท)</label>
+          <input type="number" id="fb_est" placeholder="0"/>
+        </div>
+        <div class="form-group">
+          <label>ใช้จริง (บาท)</label>
+          <input type="number" id="fb_act" placeholder="0"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>หมายเหตุ</label>
+        <input type="text" id="fb_note" placeholder="รายละเอียดเพิ่มเติม..."/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeBudgetModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveBudgetItem()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIMESHEET MODAL -->
+<div class="modal-overlay" id="timesheetModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title">บันทึก Timesheet</div>
+      <button class="modal-close" onclick="closeTimesheetModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>โครงการ</label>
+          <select id="ft_project"></select>
+        </div>
+        <div class="form-group">
+          <label>ชื่อพนักงาน</label>
+          <input type="text" id="ft_name" placeholder="ชื่อ-สกุล"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>สัปดาห์ที่</label>
+        <input type="date" id="ft_week" />
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>จันทร์</label><input type="number" id="ft_mon" placeholder="0" min="0" max="24"/></div>
+        <div class="form-group"><label>อังคาร</label><input type="number" id="ft_tue" placeholder="0" min="0" max="24"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>พุธ</label><input type="number" id="ft_wed" placeholder="0" min="0" max="24"/></div>
+        <div class="form-group"><label>พฤหัสบดี</label><input type="number" id="ft_thu" placeholder="0" min="0" max="24"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>ศุกร์</label><input type="number" id="ft_fri" placeholder="0" min="0" max="24"/></div>
+        <div class="form-group"><label>รวม (ชม.)</label><input type="number" id="ft_total" placeholder="0" readonly style="opacity:0.6"/></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeTimesheetModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveTimesheetItem()">บันทึก</button>
     </div>
   </div>
 </div>
