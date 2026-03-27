@@ -3,47 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>iTrack</title>
+  <title>iWise</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --navy: #0F1B35;
-      --navy-mid: #162040;
-      --navy-light: #1E2D52;
-      --teal: #00BFA6;
-      --teal-dim: #00897B;
-      --gold: #FFB300;
-      --red: #EF4444;
-      --green: #22C55E;
-      --blue: #3B82F6;
+      --navy: #FFFFFF;
+      --navy-mid: #F8F9FA;
+      --navy-light: #F1F3F5;
+      --teal: #CC1E2B;
+      --teal-dim: #A8161F;
+      --gold: #D97706;
+      --red: #CC1E2B;
+      --green: #16A34A;
+      --blue: #2563EB;
       --slate: #64748B;
-      --text: #E2E8F0;
-      --text-dim: #94A3B8;
-      --border: rgba(255,255,255,0.08);
-      --card: rgba(255,255,255,0.04);
-      --card-hover: rgba(255,255,255,0.07);
+      --text: #1A1A1A;
+      --text-dim: #6B7280;
+      --border: rgba(0,0,0,0.09);
+      --card: rgba(0,0,0,0.025);
+      --card-hover: rgba(204,30,43,0.05);
       --radius: 12px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Sarabun', sans-serif;
-      background: var(--navy);
+      background: #F5F5F5;
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
     }
     .sidebar {
       position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
-      background: var(--navy-mid);
-      border-right: 1px solid var(--border);
+      background: #FFFFFF;
+      border-right: 2px solid #CC1E2B;
       display: flex; flex-direction: column;
       z-index: 100;
     }
     .logo { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
     .logo-mark {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 20px; font-weight: 500; color: var(--teal); letter-spacing: -1px;
+      font-size: 20px; font-weight: 700; color: #CC1E2B; letter-spacing: -1px;
     }
     .logo-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; letter-spacing: 2px; text-transform: uppercase; }
     nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
@@ -55,10 +55,10 @@
       border: none; background: none; width: 100%; text-align: left;
     }
     .nav-item:hover { background: var(--card-hover); color: var(--text); }
-    .nav-item.active { background: rgba(0,191,166,0.12); color: var(--teal); }
+    .nav-item.active { background: rgba(204,30,43,0.08); color: #CC1E2B; font-weight: 600; }
     .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
-    .nav-section { font-size: 10px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; padding: 12px 12px 4px; margin-top: 8px; }
-    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .nav-section { font-size: 10px; color: #9CA3AF; letter-spacing: 2px; text-transform: uppercase; padding: 12px 12px 4px; margin-top: 8px; }
+    .sidebar-footer { padding: 16px; border-top: 1px solid rgba(0,0,0,0.08); background: #FAFAFA; }
     .user-info { display: flex; align-items: center; gap: 10px; }
     .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--teal-dim); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: white; flex-shrink: 0; }
     .user-name { font-size: 13px; font-weight: 500; }
@@ -66,8 +66,9 @@
     .main { margin-left: 240px; min-height: 100vh; }
     .topbar {
       position: sticky; top: 0; z-index: 50;
-      background: rgba(15,27,53,0.85);
+      background: rgba(255,255,255,0.95);
       backdrop-filter: blur(12px);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       border-bottom: 1px solid var(--border);
       padding: 14px 28px;
       display: flex; align-items: center; justify-content: space-between;
@@ -80,8 +81,8 @@
     }
     .btn-primary { background: var(--teal); color: var(--navy); }
     .btn-primary:hover { background: #00D4B8; }
-    .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: var(--card-hover); }
+    .btn-secondary { background: #F3F4F6; color: #374151; border: 1px solid rgba(0,0,0,0.1); }
+    .btn-secondary:hover { background: #E5E7EB; }
     .btn-danger { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
     .btn-danger:hover { background: rgba(239,68,68,0.2); }
     .btn svg { width: 16px; height: 16px; }
@@ -112,7 +113,7 @@
     .stat-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
     .stat-value { font-size: 32px; font-weight: 700; line-height: 1; }
     .stat-sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
-    .stat-card.teal .stat-value { color: var(--teal); }
+    .stat-card.teal .stat-value { color: #CC1E2B; }
     .stat-card.gold .stat-value { color: var(--gold); }
     .stat-card.red .stat-value { color: var(--red); }
     .stat-card.blue .stat-value { color: var(--blue); }
@@ -125,16 +126,16 @@
       padding: 10px 16px; border-bottom: 1px solid var(--border);
     }
     .project-table td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 14px; }
-    .project-table tr:hover td { background: var(--card-hover); }
+    .project-table tr:hover td { background: rgba(204,30,43,0.03); }
     .project-table tr:last-child td { border-bottom: none; }
-    .table-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .table-card { background: #FFFFFF; border: 1px solid rgba(0,0,0,0.07); border-radius: var(--radius); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
     .badge {
       display: inline-flex; align-items: center; gap: 5px;
       padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
     }
     .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
-    .badge.on-track { background: rgba(34,197,94,0.12); color: var(--green); }
-    .badge.on-track .badge-dot { background: var(--green); }
+    .badge.on-track { background: rgba(22,163,74,0.1); color: #16A34A; }
+    .badge.on-track .badge-dot { background: #16A34A; }
     .badge.at-risk { background: rgba(255,179,0,0.12); color: var(--gold); }
     .badge.at-risk .badge-dot { background: var(--gold); }
     .badge.delayed { background: rgba(239,68,68,0.12); color: var(--red); }
@@ -145,7 +146,7 @@
     .badge.planning .badge-dot { background: var(--slate); }
     .progress-wrap { display: flex; align-items: center; gap: 10px; }
     .progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-    .progress-fill { height: 100%; border-radius: 3px; background: var(--teal); transition: width 0.3s; }
+    .progress-fill { height: 100%; border-radius: 3px; background: #CC1E2B; transition: width 0.3s; }
     .progress-fill.gold { background: var(--gold); }
     .progress-fill.red { background: var(--red); }
     .progress-pct { font-size: 12px; color: var(--text-dim); min-width: 32px; text-align: right; font-family: 'IBM Plex Mono', monospace; }
@@ -157,8 +158,8 @@
     }
     .modal-overlay.open { opacity: 1; pointer-events: all; }
     .modal {
-      background: var(--navy-mid); border: 1px solid var(--border);
-      border-radius: 16px; width: 100%; max-width: 680px; max-height: 90vh;
+      background: #FFFFFF; border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 16px; width: 100%; max-width: 680px; max-height: 90vh; box-shadow: 0 16px 48px rgba(0,0,0,0.12);
       overflow-y: auto; transform: translateY(16px); transition: transform 0.2s;
     }
     .modal-overlay.open .modal { transform: translateY(0); }
@@ -178,23 +179,23 @@
       color: var(--text); font-size: 14px; font-family: 'Sarabun', sans-serif;
       transition: border-color 0.15s; outline: none;
     }
-    input:focus, select:focus, textarea:focus { border-color: var(--teal); }
+    input:focus, select:focus, textarea:focus { border-color: #CC1E2B; }
     select option { background: var(--navy-mid); }
     textarea { resize: vertical; min-height: 80px; }
-    .tabs { display: flex; gap: 2px; background: var(--card); border-radius: 8px; padding: 3px; margin-bottom: 24px; width: fit-content; }
+    .tabs { display: flex; gap: 2px; background: #F3F4F6; border-radius: 8px; padding: 3px; margin-bottom: 24px; width: fit-content; }
     .tab {
       padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
       cursor: pointer; transition: all 0.15s; color: var(--text-dim);
       border: none; background: none; font-family: 'Sarabun', sans-serif;
     }
-    .tab.active { background: var(--navy-light); color: var(--text); }
+    .tab.active { background: #CC1E2B; color: #FFFFFF; }
     .report-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .report-card {
       background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
       padding: 20px; cursor: pointer; transition: all 0.15s; text-align: left;
     }
-    .report-card:hover { border-color: var(--teal); background: rgba(0,191,166,0.05); }
-    .report-card.selected { border-color: var(--teal); background: rgba(0,191,166,0.08); }
+    .report-card:hover { border-color: #CC1E2B; background: rgba(204,30,43,0.03); }
+    .report-card.selected { border-color: #CC1E2B; background: rgba(204,30,43,0.05); }
     .report-icon { font-size: 28px; margin-bottom: 10px; }
     .report-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
     .report-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
@@ -220,17 +221,18 @@
     .empty-text { font-size: 15px; }
     #toast {
       position: fixed; bottom: 24px; right: 24px; z-index: 999;
-      background: var(--navy-light); border: 1px solid var(--border);
-      border-radius: 10px; padding: 12px 18px;
+      background: #FFFFFF; border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); padding: 12px 18px;
       font-size: 14px; display: flex; align-items: center; gap: 10px;
       transform: translateY(80px); opacity: 0; transition: all 0.3s;
     }
     #toast.show { transform: translateY(0); opacity: 1; }
+    #toast { color: #1A1A1A; }
     #toast.success { border-color: rgba(34,197,94,0.4); }
     #toast.error { border-color: rgba(239,68,68,0.4); }
     .spinner {
       width: 20px; height: 20px; border: 2px solid var(--border);
-      border-top-color: var(--teal); border-radius: 50%;
+      border-top-color: #CC1E2B; border-radius: 50%;
       animation: spin 0.7s linear infinite; flex-shrink: 0;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -253,9 +255,9 @@
     .ts-cell { text-align: center; padding: 8px 4px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; min-width: 44px; }
     .ts-day { text-align: center; font-size: 10px; color: var(--text-dim); padding: 6px 4px; min-width: 44px; }
     .ts-fill { background: rgba(0,191,166,0.12); color: var(--teal); border-radius: 4px; display: inline-block; min-width: 28px; padding: 2px 6px; }
-    .fin-tabs { display: flex; gap: 2px; background: var(--card); border-radius: 8px; padding: 3px; margin-bottom: 20px; width: fit-content; }
+    .fin-tabs { display: flex; gap: 2px; background: #F3F4F6; border-radius: 8px; padding: 3px; margin-bottom: 20px; width: fit-content; }
     .fin-tab { padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; color: var(--text-dim); border: none; background: none; font-family: 'Sarabun', sans-serif; }
-    .fin-tab.active { background: var(--navy-light); color: var(--text); }
+    .fin-tab.active { background: #CC1E2B; color: #FFFFFF; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   </style>
 </head>
@@ -265,7 +267,7 @@
 <div id="loginScreen">
   <div class="login-card">
     <div class="login-icon">📊</div>
-    <div class="login-title">iTrack</div>
+    <div class="login-title">iWise</div>
     <div class="login-sub">ระบบบริหารจัดการโครงการ<br/>เชื่อมต่อกับ Microsoft 365 ของบริษัท</div>
     <button class="ms-btn" onclick="signIn()">
       <svg width="20" height="20" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
@@ -284,8 +286,8 @@
 <div id="appShell" class="hidden">
   <div class="sidebar">
     <div class="logo">
-      <div class="logo-mark">PM//</div>
-      <div class="logo-sub">Dashboard</div>
+      <div class="logo-mark">iWise</div>
+      <div class="logo-sub">by iWired</div>
     </div>
     <nav>
       <div class="nav-section">หน้าหลัก</div>
