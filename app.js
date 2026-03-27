@@ -309,57 +309,331 @@ function renderCurrentPage() {
   }
 }
 
-// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+// ─── DASHBOARD (BI Style) ─────────────────────────────────────────────────────
 function renderDashboard() {
-  const total = projects.length;
-  const onTrack = projects.filter(p => p.status === 'on-track').length;
-  const atRisk = projects.filter(p => p.status === 'at-risk').length;
-  const delayed = projects.filter(p => p.status === 'delayed').length;
+  const total     = projects.length;
+  const onTrack   = projects.filter(p => p.status === 'on-track').length;
+  const atRisk    = projects.filter(p => p.status === 'at-risk').length;
+  const delayed   = projects.filter(p => p.status === 'delayed').length;
   const completed = projects.filter(p => p.status === 'completed').length;
+  const planning  = projects.filter(p => p.status === 'planning').length;
 
-  const recent = [...projects].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 5);
+  const totalBudget  = projects.reduce((a, p) => a + (parseInt(p.budget) || 0), 0);
+  const totalSpent   = projects.reduce((a, p) => a + (parseInt(p.spent)  || 0), 0);
+  const budgetPct    = totalBudget ? Math.round(totalSpent / totalBudget * 100) : 0;
+  const avgProgress  = total ? Math.round(projects.reduce((a, p) => a + (parseInt(p.progress)||0), 0) / total) : 0;
+
+  const recent     = [...projects].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 5);
+  const needsAttn  = projects.filter(p => p.status === 'at-risk' || p.status === 'delayed');
+  const duesSoon   = [...projects].filter(p => p.endDate && p.status !== 'completed')
+                       .sort((a, b) => new Date(a.endDate) - new Date(b.endDate)).slice(0, 4);
+
+  // ── Donut chart SVG ──
+  const statuses  = ['on-track','at-risk','delayed','completed','planning'];
+  const colors    = ['#16A34A','#D97706','#DC2626','#2563EB','#9CA3AF'];
+  const counts    = statuses.map(s => projects.filter(p => p.status === s).length);
+  const circ      = 2 * Math.PI * 38;
+  let offset = 0;
+  const arcs = counts.map((c, i) => {
+    if (!c || !total) return '';
+    const len = circ * (c / total);
+    const arc = `<circle cx="44" cy="44" r="38" fill="none" stroke="${colors[i]}" stroke-width="11"
+      stroke-dasharray="${len} ${circ - len}" stroke-dashoffset="${-offset}"
+      transform="rotate(-90 44 44)" stroke-linecap="butt"/>`;
+    offset += len;
+    return arc;
+  }).join('');
+
+  // ── Budget bar chart ──
+  const topBudget = [...projects].filter(p => p.budget).sort((a, b) => (b.budget||0)-(a.budget||0)).slice(0,5);
+  const maxBgt    = Math.max(...topBudget.map(p => parseInt(p.budget)||0), 1);
+
+  // ── Progress heatmap data ──
+  const pmGroups = {};
+  projects.forEach(p => {
+    if (!p.pm) return;
+    if (!pmGroups[p.pm]) pmGroups[p.pm] = [];
+    pmGroups[p.pm].push(p);
+  });
+
+  // ── Days until deadline ──
+  const today = new Date();
+  const daysDiff = p => {
+    if (!p.endDate) return null;
+    return Math.ceil((new Date(p.endDate) - today) / (1000 * 60 * 60 * 24));
+  };
 
   document.getElementById('pageContent').innerHTML = `
-    <div class="stat-grid">
-      <div class="stat-card teal">
-        <div class="stat-label">โครงการทั้งหมด</div>
-        <div class="stat-value">${total}</div>
-        <div class="stat-sub">โครงการในระบบ</div>
+  <style>
+    .bi-grid { display: grid; gap: 16px; }
+    .bi-row2 { grid-template-columns: 1fr 1fr; }
+    .bi-row3 { grid-template-columns: 1fr 1fr 1fr; }
+    .bi-row-main { grid-template-columns: 2fr 1fr; }
+    .bi-row-side { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .bi-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .bi-card-title {
+      font-size: 12px; font-weight: 700; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .kpi-val { font-size: 36px; font-weight: 700; line-height: 1; margin: 4px 0; }
+    .kpi-sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+    .kpi-chip {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    }
+    .chip-green { background: #DCFCE7; color: #16A34A; }
+    .chip-red { background: #FEE2E2; color: #DC2626; }
+    .chip-amber { background: #FEF3C7; color: #D97706; }
+    .chip-blue { background: #DBEAFE; color: #2563EB; }
+
+    .gauge-wrap { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+    .gauge-bar { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .gauge-fill { height: 100%; border-radius: 4px; transition: width .4s; }
+
+    .donut-legend { display: flex; flex-direction: column; gap: 7px; }
+    .dl-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .dl-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+    .dl-label { flex: 1; color: var(--text-dim); }
+    .dl-count { font-weight: 700; color: var(--text); font-family: 'IBM Plex Mono', monospace; }
+    .dl-pct { font-size: 10px; color: var(--text-light); }
+
+    .budget-row { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
+    .budget-row:last-child { margin-bottom: 0; }
+    .budget-name { width: 110px; font-size: 12px; font-weight: 500; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .budget-bar-wrap { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+    .budget-bar-track { height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .budget-bar-fill { height: 100%; border-radius: 4px; transition: width .5s; }
+    .budget-nums { font-size: 10px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; text-align: right; white-space: nowrap; }
+
+    .attn-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .12s; }
+    .attn-item:last-child { border-bottom: none; }
+    .attn-item:hover { background: var(--primary-light); margin: 0 -18px; padding: 10px 18px; border-radius: 6px; }
+    .attn-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+    .attn-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+    .attn-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+
+    .due-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .due-item:last-child { border-bottom: none; }
+    .due-item:hover { background: var(--primary-light); margin: 0 -18px; padding: 9px 18px; border-radius: 6px; }
+    .due-days { width: 44px; text-align: center; flex-shrink: 0; }
+    .due-days-num { font-size: 18px; font-weight: 700; line-height: 1; }
+    .due-days-label { font-size: 9px; color: var(--text-dim); }
+    .due-name { flex: 1; font-size: 12.5px; font-weight: 500; }
+    .due-code { font-size: 10px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
+
+    .pm-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .pm-row:last-child { margin-bottom: 0; }
+    .pm-av { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .pm-name { font-size: 12px; font-weight: 600; flex-shrink: 0; width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pm-bars { flex: 1; display: flex; gap: 3px; }
+    .pm-bar { height: 20px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: white; min-width: 20px; transition: width .4s; }
+    .pm-total { font-size: 11px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; width: 30px; text-align: right; }
+
+    .prog-list-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .prog-list-item:last-child { border-bottom: none; }
+    .prog-list-item:hover { background: var(--primary-light); margin: 0 -18px; padding: 8px 18px; border-radius: 6px; }
+    .prog-list-name { flex: 1; font-size: 12.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .prog-list-bar { width: 120px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+    .prog-list-fill { height: 100%; border-radius: 3px; }
+    .prog-list-pct { width: 34px; text-align: right; font-size: 11px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; flex-shrink: 0; }
+  </style>
+
+  <!-- ROW 1: KPI Cards -->
+  <div class="bi-grid bi-row-side" style="margin-bottom:16px">
+    <div class="bi-card">
+      <div class="bi-card-title">โครงการทั้งหมด</div>
+      <div class="kpi-val" style="color:var(--primary)">${total}</div>
+      <div class="kpi-sub">${completed} เสร็จแล้ว · ${total - completed} กำลังดำเนินการ</div>
+      <div class="gauge-wrap"><div class="gauge-bar"><div class="gauge-fill" style="width:${total?Math.round(completed/total*100):0}%;background:var(--primary)"></div></div><span style="font-size:11px;color:var(--text-dim)">${total?Math.round(completed/total*100):0}%</span></div>
+    </div>
+    <div class="bi-card">
+      <div class="bi-card-title">ความคืบหน้าเฉลี่ย</div>
+      <div class="kpi-val" style="color:${avgProgress>=70?'#16A34A':avgProgress>=40?'#D97706':'#DC2626'}">${avgProgress}%</div>
+      <div class="kpi-sub">ทุกโครงการที่ Active</div>
+      <div class="gauge-wrap"><div class="gauge-bar"><div class="gauge-fill" style="width:${avgProgress}%;background:${avgProgress>=70?'#16A34A':avgProgress>=40?'#D97706':'#DC2626'}"></div></div></div>
+    </div>
+    <div class="bi-card">
+      <div class="bi-card-title">งบประมาณรวม</div>
+      <div class="kpi-val" style="color:var(--text);font-size:26px;margin-top:6px">${(totalBudget/1000000).toFixed(1)}M</div>
+      <div class="kpi-sub">ใช้ไป ${(totalSpent/1000000).toFixed(1)}M ฿ (${budgetPct}%)</div>
+      <div class="gauge-wrap"><div class="gauge-bar"><div class="gauge-fill" style="width:${Math.min(budgetPct,100)}%;background:${budgetPct>90?'#DC2626':budgetPct>70?'#D97706':'#16A34A'}"></div></div><span style="font-size:11px;color:var(--text-dim)">${budgetPct}%</span></div>
+    </div>
+    <div class="bi-card">
+      <div class="bi-card-title">Health Status</div>
+      <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+        <span class="kpi-chip chip-green">✓ ${onTrack} On Track</span>
+        <span class="kpi-chip chip-amber">⚠ ${atRisk} At Risk</span>
+        <span class="kpi-chip chip-red">✕ ${delayed} Delayed</span>
+        <span class="kpi-chip chip-blue">○ ${planning} Planning</span>
       </div>
-      <div class="stat-card blue">
-        <div class="stat-label">On Track</div>
-        <div class="stat-value">${onTrack}</div>
-        <div class="stat-sub">เป็นไปตามแผน</div>
+      <div style="margin-top:12px;display:flex;gap:2px;height:8px;border-radius:4px;overflow:hidden">
+        ${total ? [
+          [onTrack,'#16A34A'],[atRisk,'#D97706'],[delayed,'#DC2626'],[planning,'#9CA3AF'],[completed,'#2563EB']
+        ].map(([c,col]) => c ? `<div style="flex:${c};background:${col}"></div>` : '').join('') : '<div style="flex:1;background:var(--border)"></div>'}
       </div>
-      <div class="stat-card gold">
-        <div class="stat-label">At Risk</div>
-        <div class="stat-value">${atRisk}</div>
-        <div class="stat-sub">ต้องติดตาม</div>
-      </div>
-      <div class="stat-card red">
-        <div class="stat-label">Delayed</div>
-        <div class="stat-value">${delayed}</div>
-        <div class="stat-sub">ล่าช้ากว่าแผน</div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Donut + Budget + Needs Attention -->
+  <div class="bi-grid bi-row3" style="margin-bottom:16px">
+    <!-- Donut -->
+    <div class="bi-card">
+      <div class="bi-card-title">สัดส่วนสถานะ <span style="font-weight:400;text-transform:none;letter-spacing:0">${total} โครงการ</span></div>
+      <div style="display:flex;align-items:center;gap:18px">
+        <svg width="88" height="88" viewBox="0 0 88 88" style="flex-shrink:0">
+          <circle cx="44" cy="44" r="38" fill="none" stroke="#F3F4F6" stroke-width="11"/>
+          ${total ? arcs : ''}
+          <text x="44" y="40" text-anchor="middle" fill="#1F2937" font-size="18" font-weight="700" font-family="sans-serif">${total}</text>
+          <text x="44" y="54" text-anchor="middle" fill="#9CA3AF" font-size="9" font-family="sans-serif">projects</text>
+        </svg>
+        <div class="donut-legend">
+          ${[['on-track','On Track','#16A34A',onTrack],['at-risk','At Risk','#D97706',atRisk],
+             ['delayed','Delayed','#DC2626',delayed],['completed','Done','#2563EB',completed],
+             ['planning','Planning','#9CA3AF',planning]].map(([,label,color,count]) => count > 0 ? `
+          <div class="dl-row">
+            <div class="dl-dot" style="background:${color}"></div>
+            <span class="dl-label">${label}</span>
+            <span class="dl-count">${count}</span>
+            <span class="dl-pct">${total?Math.round(count/total*100):0}%</span>
+          </div>` : '').join('')}
+        </div>
       </div>
     </div>
 
-    <div class="section-header">
-      <div class="section-title">อัปเดตล่าสุด</div>
-      <button class="btn btn-primary" onclick="openAddProject()">+ เพิ่มโครงการ</button>
+    <!-- Budget Breakdown -->
+    <div class="bi-card">
+      <div class="bi-card-title">งบประมาณ — Top 5 โครงการ</div>
+      ${topBudget.length === 0
+        ? `<div class="empty" style="padding:20px"><div class="empty-icon">💰</div><div class="empty-text" style="font-size:12px">ยังไม่มีข้อมูล</div></div>`
+        : topBudget.map(p => {
+            const bgt = parseInt(p.budget)||0;
+            const spt = parseInt(p.spent)||0;
+            const bw  = Math.round(bgt/maxBgt*100);
+            const sw  = bgt ? Math.round(spt/bgt*100) : 0;
+            const bc  = sw > 90 ? '#DC2626' : sw > 70 ? '#D97706' : '#CC1E2B';
+            return `<div class="budget-row">
+              <div class="budget-name" title="${p.name}">${p.code}</div>
+              <div class="budget-bar-wrap">
+                <div class="budget-bar-track"><div class="budget-bar-fill" style="width:${bw}%;background:#E5E7EB"></div></div>
+                <div class="budget-bar-track"><div class="budget-bar-fill" style="width:${Math.min(sw,100)}%;background:${bc}"></div></div>
+              </div>
+              <div class="budget-nums">${(bgt/1000).toFixed(0)}K</div>
+            </div>`;
+          }).join('')
+      }
+      ${topBudget.length > 0 ? `<div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--text-dim)"><span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:4px;background:#E5E7EB;border-radius:2px;display:inline-block"></span>งบประมาณ</span><span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:4px;background:var(--primary);border-radius:2px;display:inline-block"></span>ใช้จริง</span></div>` : ''}
     </div>
-    <div class="table-card">
-      ${recent.length === 0 ? `<div class="empty"><div class="empty-icon">📁</div><div class="empty-text">ยังไม่มีโครงการ กด "เพิ่มโครงการ" เพื่อเริ่มต้น</div></div>` :
-        `<table class="project-table">
-          <thead><tr>
-            <th>รหัส</th><th>ชื่อโครงการ</th><th>PM</th><th>สถานะ</th><th>ความคืบหน้า</th><th>วันสิ้นสุด</th>
-          </tr></thead>
-          <tbody>
-            ${recent.map(p => projectRow(p)).join('')}
-          </tbody>
-        </table>`
+
+    <!-- Needs Attention -->
+    <div class="bi-card">
+      <div class="bi-card-title" style="color:${needsAttn.length?'#DC2626':'inherit'}">
+        ${needsAttn.length ? '🚨 ต้องดำเนินการด่วน' : '⚡ สถานะโครงการ'}
+        <span style="background:${needsAttn.length?'#FEE2E2':'#DCFCE7'};color:${needsAttn.length?'#DC2626':'#16A34A'};padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:none;letter-spacing:0">${needsAttn.length} รายการ</span>
+      </div>
+      ${needsAttn.length === 0
+        ? `<div class="empty" style="padding:20px"><div class="empty-icon">✅</div><div class="empty-text" style="font-size:12px">ทุกโครงการเป็นไปตามแผน</div></div>`
+        : needsAttn.slice(0,4).map(p => `
+          <div class="attn-item" onclick="viewProject('${p.id}')">
+            <div class="attn-dot" style="background:${p.status==='delayed'?'#DC2626':'#D97706'}"></div>
+            <div style="flex:1">
+              <div class="attn-name">${p.name}</div>
+              <div class="attn-desc">${(p.risks||'ไม่มีหมายเหตุ').slice(0,55)}${(p.risks||'').length>55?'...':''}</div>
+              <div style="margin-top:4px">${statusBadge(p.status)}</div>
+            </div>
+          </div>`).join('')
       }
     </div>
-  `;
+  </div>
+
+  <!-- ROW 3: Progress List + Due Soon + PM Workload -->
+  <div class="bi-grid" style="grid-template-columns:1.2fr 1fr 1fr;margin-bottom:16px">
+    <!-- Progress per project -->
+    <div class="bi-card">
+      <div class="bi-card-title">ความคืบหน้าแต่ละโครงการ <button class="btn btn-primary" onclick="openAddProject()" style="padding:3px 10px;font-size:11px;text-transform:none;letter-spacing:0;font-weight:600">+ เพิ่ม</button></div>
+      ${projects.length === 0
+        ? `<div class="empty" style="padding:20px"><div class="empty-icon">📁</div><div class="empty-text" style="font-size:12px">ยังไม่มีโครงการ</div></div>`
+        : [...projects].sort((a,b)=>(parseInt(b.progress)||0)-(parseInt(a.progress)||0)).map(p => {
+            const pct = parseInt(p.progress)||0;
+            const col = pct>=70?'#16A34A':pct>=40?'#D97706':'#DC2626';
+            return `<div class="prog-list-item" onclick="viewProject('${p.id}')">
+              <div style="flex:1;min-width:0">
+                <div class="prog-list-name">${p.name}</div>
+                <div style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace">${p.code}</div>
+              </div>
+              <div class="prog-list-bar"><div class="prog-list-fill" style="width:${pct}%;background:${col}"></div></div>
+              <div class="prog-list-pct" style="color:${col}">${pct}%</div>
+            </div>`;
+          }).join('')
+      }
+    </div>
+
+    <!-- Due Soon -->
+    <div class="bi-card">
+      <div class="bi-card-title">กำหนดส่งใกล้ถึง</div>
+      ${duesSoon.length === 0
+        ? `<div class="empty" style="padding:20px"><div class="empty-icon">📅</div><div class="empty-text" style="font-size:12px">ไม่มีกำหนดที่ใกล้ถึง</div></div>`
+        : duesSoon.map(p => {
+            const d = daysDiff(p);
+            const dc = d <= 7 ? '#DC2626' : d <= 30 ? '#D97706' : '#16A34A';
+            return `<div class="due-item" onclick="viewProject('${p.id}')">
+              <div class="due-days">
+                <div class="due-days-num" style="color:${dc}">${d !== null ? (d < 0 ? `+${Math.abs(d)}` : d) : '—'}</div>
+                <div class="due-days-label">${d < 0 ? 'เกินกำหนด' : 'วัน'}</div>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div class="due-code">${p.code}</div>
+                <div class="due-name">${p.name.length>26?p.name.slice(0,26)+'…':p.name}</div>
+                <div style="margin-top:3px">${statusBadge(p.status)}</div>
+              </div>
+            </div>`;
+          }).join('')
+      }
+    </div>
+
+    <!-- PM Workload -->
+    <div class="bi-card">
+      <div class="bi-card-title">PM Workload</div>
+      ${Object.keys(pmGroups).length === 0
+        ? `<div class="empty" style="padding:20px"><div class="empty-icon">👤</div><div class="empty-text" style="font-size:12px">ยังไม่มีข้อมูล PM</div></div>`
+        : Object.entries(pmGroups).map(([pm, projs]) => {
+            const active   = projs.filter(p => p.status !== 'completed').length;
+            const done     = projs.filter(p => p.status === 'completed').length;
+            const atRiskPM = projs.filter(p => p.status === 'at-risk' || p.status === 'delayed').length;
+            const initials = pm.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+            return `<div class="pm-row">
+              <div class="pm-av">${initials}</div>
+              <div class="pm-name" title="${pm}">${pm.split(' ')[0]}</div>
+              <div class="pm-bars">
+                ${active ? `<div class="pm-bar" style="flex:${active};background:#CC1E2B" title="Active: ${active}">${active}</div>` : ''}
+                ${done  ? `<div class="pm-bar" style="flex:${done};background:#16A34A" title="Done: ${done}">${done}</div>` : ''}
+              </div>
+              <div class="pm-total">${projs.length}p</div>
+            </div>`;
+          }).join('')
+      }
+      ${Object.keys(pmGroups).length > 0 ? `<div style="display:flex;gap:10px;margin-top:10px;font-size:10px;color:var(--text-dim)"><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--primary);border-radius:2px;display:inline-block"></span>Active</span><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:#16A34A;border-radius:2px;display:inline-block"></span>Done</span></div>` : ''}
+    </div>
+  </div>
+
+  <!-- ROW 4: Recent Table -->
+  <div class="bi-card" style="padding:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)">
+      <span class="bi-card-title" style="margin:0">อัปเดตล่าสุด</span>
+      <button class="btn btn-secondary" onclick="showPage('projects')" style="font-size:12px;padding:5px 12px">ดูทั้งหมด →</button>
+    </div>
+    ${recent.length === 0
+      ? `<div class="empty"><div class="empty-icon">📁</div><div class="empty-text">ยังไม่มีโครงการ กด "+ เพิ่มโครงการ" เพื่อเริ่มต้น</div></div>`
+      : `<table class="project-table">
+          <thead><tr><th>รหัส</th><th>ชื่อโครงการ</th><th>PM</th><th>สถานะ</th><th>ความคืบหน้า</th><th>วันสิ้นสุด</th></tr></thead>
+          <tbody>${recent.map(p => projectRow(p)).join('')}</tbody>
+        </table>`
+    }
+  </div>`;
 }
 
 // ─── PROJECTS LIST ────────────────────────────────────────────────────────────
